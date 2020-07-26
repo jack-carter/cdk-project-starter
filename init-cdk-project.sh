@@ -4,9 +4,8 @@
 # Local Functional Helpers
 #
 LOG() { 
-    __level=$1; 
-    __tag=$2; 
-    shift 2;
+    __level=$1; shift;
+    __tag=$1; shift;
 
     [ $log_level -ge $__level ] && echo "[${__tag}] $@";
 
