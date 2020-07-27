@@ -19,6 +19,15 @@ mkdir -p test/e2e
 mkdir -p test/iac
 mkdir -p test/__fixtures__
 ```
+## Running init-cdk-project.sh
+You can automate the steps above by downloading and running the initialization script
+using the following:
+```
+curl -o- https://raw.githubusercontent.com/jack-carter/cdk-project-starter/master/init-cdk-project.sh > init-cdk-project.sh
+chmod +x init-cdk-project.sh
+init-cdk-project <project>
+```
+
 ## Folder Conventions
 Folder               | Description
 -------------------- | -----------
