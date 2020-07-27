@@ -1,11 +1,12 @@
 # Welcome to your CDK TypeScript project!
-
 This is a blank project for TypeScript development with CDK.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+It was generated with the included script, init-cdk-project.sh, which initializes
+the project for CDK development, as well as creating test folders following common
+conventions.
 
 ## How We Got Here
-Type the following series of commands to arrive at the same point as this project.
+These are the commands to arrive at the same point as this project.
 ```
 mkdir cdk-project
 cd cdk-project
@@ -18,9 +19,24 @@ mkdir -p test/e2e
 mkdir -p test/iac
 mkdir -p test/__fixtures__
 ```
+## Folder Conventions
+Folder               | Description
+-------------------- | -----------
+`$project/`          | top-level project folder
+`bin/`               | CDK source files
+`lib/`               | supporting CDK source files
+`src/`               | SDK source files
+`src/__tests__/`     | Unit / Integration tests
+`src/__fixtures__/`  | Unit / Integration test fixtures
+`test/`              | End-to-End / Infrastructure tests
+`test/e2e/`          | End-to-End tests
+`test/iac/`          | Infrastructure tests
+`test/__fixtures__/` | End-to-End / Infrastructure test fixtures
+
+## Cloud Development Kit (CDK)
+The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 ## Useful commands
-
  * `npm run build`   compile typescript to js
  * `npm run watch`   watch for changes and compile
  * `npm run test`    perform the jest unit tests
