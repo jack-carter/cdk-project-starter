@@ -1,13 +1,20 @@
 # !/bin/bash
+ARGV=($@) ; [[ "${ARGV[@]}" =~ "--debug" ]] && __debug=on
 
-#
+DEBUG() { [[ "${__debug}" == "on" ]] && echo "[DEBUG] $@"; }
+
 # Local Functional Helpers
-#
+DEBUG defining internal functions ...
+
 LOG() { 
     __level=$1; shift;
     __tag=$1; shift;
 
-    [ $log_level -ge $__level ] && echo "[${__tag}] $@";
+    if ([ "_${__debug}" == "_on" ] || [ $log_level -ge $__level ]) ; then
+        __message="$@"
+        printf "[%5s] %s\n" "${__tag}" "${__message}";
+        unset __message
+    fi 
 
     unset __tag
     unset __level
@@ -21,6 +28,12 @@ TRACE() { LOG 4 "TRACE" $@; }
 RUN()   { INFO "$@"; [[ ! "_$run_state" == "_dry" ]] && "$@"; }
 VAR()   { var=$1; TRACE "\$${var}: ${!var}"; }
 
+REQUIRE() { 
+    param=$1; shift;
+    [[ -z "${!param}" ]] && echo "$@" && exit
+    unset param
+}
+
 INSTALLED() {
     if [[ -z `command -v ${1}` && -z `which ${1}` ]] ; then
         echo "ERROR: '${1}' is not installed."
@@ -33,6 +46,7 @@ CHECK_PACKAGER() {
 }
 
 # Command Line Arguments
+DEBUG parsing command line arguments ...
 LOG_OPTIONS=(error warn info trace)
 POSITIONAL=()
 
@@ -62,10 +76,18 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 # Positional Arguments
+DEBUG setting positional arguments ...
 project=$1
 
-# Check Settings & Set Defaults
-[[ -z "$project" ]] && echo "Usage: ${0} <project-name>" && exit
+DEFAULT() {
+    __variable=$1; shift;
+    __default=$1; shift;
+    [[ -z "${!__variable}" ]] && printf -v $__variable="$__default"
+    unset __variable
+    unset __default
+}
+
+DEBUG setting defaults ...
 [[ -z "$packager" ]] && packager=npm
 [[ -z "$language" ]] && language=typescript
 [[ -z "$log_opt" ]] && log_opt=warn
@@ -73,14 +95,17 @@ project=$1
 [[ -z "$run_state" ]] && run_state=full
 
 case "$log_opt" in
-    error) log_level=1 ;;
-    warn)  log_level=2 ;;
-    info)  log_level=3 ;;
-    trace) log_level=4 ;;
-    *)     log_level=2 ;;
+    error) log_level=1;;
+    warn)  log_level=2;;
+    info)  log_level=3;;
+    trace) log_level=4;;
+    *)     log_level=3;;
 esac
 
+[[ "_${__debug}" == "_on" ]] && log_level=99
+
 # Show Settings
+DEBUG showing settings ...
 VAR project
 VAR packager
 VAR language
@@ -88,15 +113,22 @@ VAR log_level
 VAR conventions
 VAR run_state
 
+# Check Settings
+DEBUG checking required settings ...
+REQUIRE project "Usage: ${0} <project>"
+
 # Fast-Fail when missing key commands
+DEBUG verifying required installations ...
 INSTALLED cdk
 CHECK_PACKAGER npm
 CHECK_PACKAGER yarn
 
 # Guard any existing projects
+DEBUG checking for existing project ...
 [[ -d "$project" ]] && ERROR "'${project}' already exists." && exit
 
 # CDK Initialization
+DEBUG initializing CDK project ...
 RUN mkdir $project
 RUN cd $project
 RUN cdk init app --language $language
@@ -104,6 +136,7 @@ RUN $packager run build
 RUN cdk list
 
 # Conform to testing conventions
+DEBUG creating test folders ...
 RUN mkdir -p src/__tests__
 RUN mkdir -p src/__fixtures__
 RUN mkdir -p test/e2e
@@ -111,6 +144,7 @@ RUN mkdir -p test/iac
 RUN mkdir -p test/__fixtures__
 
 # Clean-up
+DEBUG cleaning up ...
 unset log_level
 unset run_state
 unset conventions
@@ -124,6 +158,8 @@ unset LOG_OPTIONS
 
 unset -f CHECK_PACKAGER
 unset -f INSTALLED
+unset -f DEFAULT
+unset -f REQUIRE
 
 unset -f VAR
 unset -f RUN
