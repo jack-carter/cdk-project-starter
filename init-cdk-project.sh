@@ -147,7 +147,7 @@ RUN mkdir -p test/e2e
 RUN mkdir -p test/iac
 RUN mkdir -p test/__fixtures__
 
-echo -e "\n${project} is now initialized"
+echo -e "\n${project} is now initialized\n"
 
 # Clean-up
 DEBUG cleaning up ...

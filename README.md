@@ -27,6 +27,19 @@ curl -o- https://raw.githubusercontent.com/jack-carter/cdk-project-starter/maste
 chmod +x init-cdk-project.sh
 init-cdk-project <project>
 ```
+Or you can fully automate running the script by using the following:
+```
+curl -o- https://raw.githubusercontent.com/jack-carter/cdk-project-starter/master/init-cdk-project.sh | bash /dev/stdin [options] <project>
+```
+Here are the options available:
+```
+--debug
+--dry-run
+--log error|warn|info|trace
+--language typescript|... (CDK language options)
+--npm (default)
+--yarn
+```
 
 ## Folder Conventions
 Folder               | Description
