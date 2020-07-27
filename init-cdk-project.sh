@@ -7,8 +7,7 @@ DEBUG() { [[ "${__debug}" == "on" ]] && echo "[DEBUG] $@"; }
 DEBUG defining internal functions ...
 
 LOG() { 
-    __level=$1; shift;
-    __tag=$1; shift;
+    __level=$1 ;  __tag=$2 ; shift 2;
 
     if ([ "_${__debug}" == "_on" ] || [ $log_level -ge $__level ]) ; then
         __message="$@"
@@ -16,7 +15,22 @@ LOG() {
         unset __message
     fi 
 
-    unset __tag
+    unset __tag ; unset __level
+}
+
+LOG_LEVEL() {
+    __level=$1
+
+    case "$__level" in
+        error) log_level=1;;
+        warn)  log_level=2;;
+        info)  log_level=3;;
+        trace) log_level=4;;
+        *)     log_level=3;;
+    esac
+
+    [[ "${__debug}" == "on" ]] && log_level=99
+
     unset __level
 }
 
@@ -27,6 +41,12 @@ TRACE() { LOG 4 "TRACE" $@; }
 
 RUN()   { INFO "$@"; [[ ! "_$run_state" == "_dry" ]] && "$@"; }
 VAR()   { var=$1; TRACE "\$${var}: ${!var}"; }
+
+DEFAULT() {
+    __variable=$1 ; __default=$2
+    [[ -z "${!__variable}" ]] && eval "$__variable"="$__default"
+    unset __variable ; unset __default
+}
 
 REQUIRE() { 
     param=$1; shift;
@@ -79,30 +99,14 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 DEBUG setting positional arguments ...
 project=$1
 
-DEFAULT() {
-    __variable=$1; shift;
-    __default=$1; shift;
-    [[ -z "${!__variable}" ]] && printf -v $__variable="$__default"
-    unset __variable
-    unset __default
-}
-
 DEBUG setting defaults ...
-[[ -z "$packager" ]] && packager=npm
-[[ -z "$language" ]] && language=typescript
-[[ -z "$log_opt" ]] && log_opt=warn
-[[ -z "$conventions" ]] && conventions=all
-[[ -z "$run_state" ]] && run_state=full
+DEFAULT packager npm
+DEFAULT language typescript
+DEFAULT log_opt warn
+DEFAULT conventions all
+DEFAULT run_state full
 
-case "$log_opt" in
-    error) log_level=1;;
-    warn)  log_level=2;;
-    info)  log_level=3;;
-    trace) log_level=4;;
-    *)     log_level=3;;
-esac
-
-[[ "_${__debug}" == "_on" ]] && log_level=99
+LOG_LEVEL $log_opt
 
 # Show Settings
 DEBUG showing settings ...
@@ -143,6 +147,8 @@ RUN mkdir -p test/e2e
 RUN mkdir -p test/iac
 RUN mkdir -p test/__fixtures__
 
+echo -e "\n${project} is now initialized"
+
 # Clean-up
 DEBUG cleaning up ...
 unset log_level
@@ -158,15 +164,15 @@ unset LOG_OPTIONS
 
 unset -f CHECK_PACKAGER
 unset -f INSTALLED
-unset -f DEFAULT
 unset -f REQUIRE
+unset -f DEFAULT
 
 unset -f VAR
 unset -f RUN
 
-unset -f ERROR || unset LOG_ERROR
-unset -f WARN  || unset LOG_WARN
-unset -f INFO  || unset LOG_INFO
-unset -f TRACE || unset LOG_TRACE
+unset -f ERROR
+unset -f WARN
+unset -f INFO
+unset -f TRACE
 
 unset -f LOG
